@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<body>
+
+<div class="scrolling-text">
+</div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Player</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #eee;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #00b0ff;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px #00b0ff, 0 0 20px #00b0ff;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 25px;
+      background: #000;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 3px 3px 10px #000;
+    }
+    button:hover {
+      background: #00b0ff;
+      box-shadow: 0 0 12px #00b0ff;
+    }
+    #musicList {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .music-item {
+      cursor: pointer;
+      padding: 12px 20px;
+      background: #222;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: background-color 0.3s ease;
+    }
+    .music-item:hover {
+      background: #1db954;
+      color: #121212;
+    }
+    .music-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .music-author {
+      font-size: 14px;
+      font-style: italic;
+      color: #aaa;
+    }
+    audio {
+      width: 100%;
+      height: 60px;
+      margin-top: 25px;
+      outline: none;
+      border-radius: 8px;
+      background: #222;
+    }
+    .controls {
+      margin-top: 15px;
+      text-align: center;
+      color: #ccc;
+    }
+    .controls select, .controls input[type="range"] {
+      margin: 0 8px;
+    }
+    .controls label {
+      margin-right: 15px;
+      user-select: none;
+    }
+    #metronomoContainer {
+      display: none;
+      justify-content: center;
+      margin-top: 15px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #metronomoContainer input {
+      width: 60px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Player</h1>
+
+<div class="buttons">
+  <button onclick="document.getElementById('fileInput').click()">📁 Carregar Arquivo Local</button>
+</div>
+
+<input type="file" id="fileInput" accept="audio/*" style="display:none" multiple onchange="carregarArquivos(event)" />
+
+<div id="musicList"></div>
+
+<audio id="audioPlayer" controls></audio>
+
+<!-- Controles do Metrônomo -->
+<div id="metronomoContainer">
+  <button id="btnMenosBPM">−</button>
+  <button id="btnMetronomo">🎵 Metrônomo: OFF</button>
+  <button id="btnMaisBPM">+</button>
+  <input type="number" id="inputBPM" min="40" max="200" value="60" title="BPM (40 a 200)">
+</div>
+
+<hr>
+<h3 style="text-align:center; color:#1db954; cursor:pointer;" onclick="alternarAvancado()">🎛️ Metrônomo Loop e Equalizar</h3>
+
+<div id="avancado" style="display:none;">
+  <div class="buttons">
+    <button onclick="marcarInicioLoop()">▶️ Marcar Início do Loop</button>
+    <button onclick="marcarFimLoop()">⏹️ Marcar Fim do Loop</button>
+    <button onclick="desativarTrechoLoop()">⛔ Desativar Loop</button>
+    <button id="btnLoopGeral" onclick="toggleLoopGeral()">🔁 Repetir Lista: OFF</button>
+    <button id="btnLoopMusica" onclick="toggleLoopMusica()">🔂 Repetir Música: OFF</button>
+    <button onclick="alternarVelocidade()">⏩ Velocidade: 1x</button>
+  </div>
+</div>
+
+<div class="controls" id="equalizador" style="display:none;">
+  <label>Grave:
+    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(0, this.value)">
+  </label>
+  <label>Médio:
+    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(1, this.value)">
+  </label>
+  <label>Agudo:
+    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(2, this.value)">
+  </label>
+</div>
+
+<script>
+const musicas = [];
+const musicListDiv = document.getElementById('musicList');
+const audioPlayer = document.getElementById('audioPlayer');
+const btnLoopGeral = document.getElementById('btnLoopGeral');
+const btnLoopMusica = document.getElementById('btnLoopMusica');
+let repetirLista = false;
+let repetirMusica = false;
+
+function montarLista() {
+  musicListDiv.innerHTML = '';
+  musicas.forEach((musica, i) => {
+    let autor = '', titulo = musica.nome;
+    if (musica.nome.includes(' - ')) {
+      [autor, titulo] = musica.nome.split(' - ').map(s => s.trim());
+      titulo = titulo.replace(/\.[^/.]+$/, "");
+    } else {
+      titulo = musica.nome.replace(/\.[^/.]+$/, "");
+    }
+
+    const div = document.createElement('div');
+    div.className = 'music-item';
+    div.innerHTML = `<div class="music-title">${titulo}</div><div class="music-author">${autor}</div>`;
+    div.onclick = () => tocarMusica(i);
+    musicListDiv.appendChild(div);
+  });
+}
+
+function carregarArquivos(event) {
+  const files = event.target.files;
+  for (let file of files) {
+    const url = URL.createObjectURL(file);
+    musicas.push({ nome: file.name, arquivo: url });
+  }
+  montarLista();
+  if (musicas.length > 0) tocarMusica(0);
+}
+
+let musicaAtual = 0;
+
+function tocarMusica(index) {
+  musicaAtual = index;
+  audioPlayer.src = musicas[index].arquivo;
+  audioPlayer.play();
+  audioPlayer.loop = repetirMusica;
+  loopAtivo = false;
+  loopInicio = 0;
+  loopFim = 0;
+}
+
+audioPlayer.addEventListener('ended', () => {
+  if (repetirMusica) return;
+  if (repetirLista) {
+    musicaAtual = (musicaAtual + 1) % musicas.length;
+    tocarMusica(musicaAtual);
+  } else if (musicaAtual + 1 < musicas.length) {
+    musicaAtual++;
+    tocarMusica(musicaAtual);
+  }
+});
+
+function toggleLoopGeral() {
+  repetirLista = !repetirLista;
+  btnLoopGeral.innerText = repetirLista ? "🔁 Repetir Lista: ON" : "🔁 Repetir Lista: OFF";
+}
+
+function toggleLoopMusica() {
+  repetirMusica = !repetirMusica;
+  audioPlayer.loop = repetirMusica;
+  btnLoopMusica.innerText = repetirMusica ? "🔂 Repetir Música: ON" : "🔂 Repetir Música: OFF";
+}
+
+// Equalizador
+let audioCtx, sourceNode, gainNode, filters = [];
+
+function initAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sourceNode = audioCtx.createMediaElementSource(audioPlayer);
+    gainNode = audioCtx.createGain();
+    const freqs = [60, 1000, 5000];
+    filters = freqs.map(f => {
+      let filter = audioCtx.createBiquadFilter();
+      filter.type = "peaking";
+      filter.frequency.value = f;
+      filter.Q.value = 1;
+      filter.gain.value = 0;
+      return filter;
+    });
+    sourceNode.connect(filters[0]);
+    filters.reduce((a, b) => (a.connect(b), b));
+    filters[filters.length - 1].connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+  }
+}
+
+function ajustarEqualizador(index, valor) {
+  initAudioContext();
+  filters[index].gain.value = parseFloat(valor);
+}
+
+// Loop de trecho
+let loopInicio = 0, loopFim = 0, loopAtivo = false;
+
+function marcarInicioLoop() {
+  loopInicio = audioPlayer.currentTime;
+  if (loopFim > 0 && loopFim <= loopInicio) loopFim = 0;
+  loopAtivo = loopFim > loopInicio;
+  alert(`▶️ Início marcado em ${loopInicio.toFixed(2)}s`);
+}
+
+function marcarFimLoop() {
+  if (loopInicio === 0) return alert("⚠️ Marque o início primeiro.");
+  loopFim = audioPlayer.currentTime;
+  if (loopFim <= loopInicio) return alert("⚠️ Fim deve ser maior que início.");
+  loopAtivo = true;
+  alert(`⏹️ Fim marcado em ${loopFim.toFixed(2)}s`);
+}
+
+function desativarTrechoLoop() {
+  loopAtivo = false;
+  loopInicio = 0;
+  loopFim = 0;
+  alert("⛔ Loop de trecho desativado.");
+}
+
+audioPlayer.ontimeupdate = () => {
+  if (loopAtivo && audioPlayer.currentTime >= loopFim && loopFim > loopInicio) {
+    audioPlayer.currentTime = loopInicio;
+    audioPlayer.play();
+  }
+};
+
+// Velocidade
+let velocidades = [0.5, 0.75, 1, 1.25, 1.5, 2];
+let indiceVelocidade = 2;
+function alternarVelocidade() {
+  indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+  const novaVelocidade = velocidades[indiceVelocidade];
+  audioPlayer.playbackRate = novaVelocidade;
+  event.target.innerText = `⏩ Velocidade: ${novaVelocidade}x`;
+}
+
+// Mostrar/Ocultar controles avançados e metrônomo
+function alternarAvancado() {
+  const divAvancado = document.getElementById('avancado');
+  const eq = document.getElementById('equalizador');
+  const met = document.getElementById('metronomoContainer');
+  const visivel = divAvancado.style.display === 'block';
+  divAvancado.style.display = eq.style.display = met.style.display = visivel ? 'none' : 'flex';
+}
+
+window.onload = montarLista;
+
+// --- Metrônomo ---
+let metronomoAtivo = false;
+let bpm = 60;
+let intervalId = null;
+let audioCtxGlobal = null;
+
+function tocarClique() {
+  if (!audioCtxGlobal) return;
+  const osc = audioCtxGlobal.createOscillator();
+  const gainNode = audioCtxGlobal.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(1000, audioCtxGlobal.currentTime);
+  gainNode.gain.setValueAtTime(1, audioCtxGlobal.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtxGlobal.currentTime + 0.05);
+  osc.connect(gainNode);
+  gainNode.connect(audioCtxGlobal.destination);
+  osc.start(audioCtxGlobal.currentTime);
+  osc.stop(audioCtxGlobal.currentTime + 0.05);
+}
+
+function iniciarMetronomo() {
+  if (!audioCtxGlobal) {
+    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (intervalId) clearInterval(intervalId);
+  const intervalo = 60000 / bpm;
+  tocarClique();
+  intervalId = setInterval(tocarClique, intervalo);
+}
+
+function pararMetronomo() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+}
+
+document.getElementById('btnMetronomo').onclick = () => {
+  if (!audioCtxGlobal) {
+    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  metronomoAtivo = !metronomoAtivo;
+  const btn = document.getElementById('btnMetronomo');
+  if (metronomoAtivo) {
+    btn.textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+    iniciarMetronomo();
+  } else {
+    btn.textContent = '🎵 Metrônomo: OFF';
+    pararMetronomo();
+  }
+};
+
+document.getElementById('inputBPM').onchange = () => {
+  let val = parseInt(inputBPM.value);
+  if (isNaN(val) || val < 40) val = 40;
+  else if (val > 200) val = 200;
+  bpm = val;
+  inputBPM.value = bpm;
+  if (metronomoAtivo) {
+    iniciarMetronomo();
+    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+  }
+};
+
+document.getElementById('btnMaisBPM').onclick = () => {
+  if (bpm < 200) {
+    bpm++;
+    inputBPM.value = bpm;
+    if (metronomoAtivo) iniciarMetronomo();
+    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+  }
+};
+
+document.getElementById('btnMenosBPM').onclick = () => {
+  if (bpm > 40) {
+    bpm--;
+    inputBPM.value = bpm;
+    if (metronomoAtivo) iniciarMetronomo();
+    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+  }
+};
+</script>
+
+</body>
+</html>
