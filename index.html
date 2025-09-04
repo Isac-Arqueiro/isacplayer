@@ -120,7 +120,63 @@
   </style>
 </head>
 <body>
+<div id="bloqueio" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#111;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;">
+  <h2>Digite a senha para acessar o site</h2>
+  <input type="password" id="senhaInput" style="padding:10px;font-size:16px;" placeholder="Senha">
+  <button id="btnEntrar" style="padding:10px 20px;margin-top:10px;font-size:16px;">Entrar</button>
+<a href="https://wa.me/558486222876?text=Olá,%20quero%20falar%20com%20vocês!" 
+   target="_blank" 
+   style="display: inline-block; margin-top: 10px; padding: 5px 15px; background-color: #25D366; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">
+  📱 Fale conosco
+</a>
+  <p id="mensagem" style="color:red;margin-top:10px;"></p>
+</div>
 
+<script>
+  const senhasValidas = ["A002500", "A002501", "A002502", "A002503", "A002504",
+"A002505", "A002506", "A002507", "A002508", "A002509",
+"A002510", "A002511", "A002512", "A002513", "A002514",
+"A002515", "A002516", "A002517", "A002518", "A002519",
+"A002520", "A002521", "A002522", "A002523", "A002524",
+"A002525", "A002526", "A002527", "A002528", "A002529",
+"A002530", "A002531", "A002532", "A002533", "A002534",
+"A002535", "A002536", "A002537", "A002538", "A002539",
+"A002540", "A002541", "A002542", "A002543", "A002544",
+"A002545", "A002546", "A002547", "A002548", "A002549",
+"A002550", "A002551", "A002552", "A002553", "A002554",
+"A002555", "A002556", "A002557", "A002558", "A002559",
+"A002560", "A002561", "A002562", "A002563", "A002564",
+"A002565", "A002566", "A002567", "A002568", "A002569",
+"A002570", "A002571", "A002572", "A002573", "A002574",
+"A002575", "A002576", "A002577", "A002578", "A002579",
+"A002580", "A002581", "A002582", "A002583", "A002584",
+"A002585", "A002586", "A002587", "A002588", "A002589",
+"A002590", "A002591", "A002592", "A002593", "A002594", "A002595"]; // coloque suas senhas aqui
+  const bloqueio = document.getElementById('bloqueio');
+  const senhaInput = document.getElementById('senhaInput');
+  const btnEntrar = document.getElementById('btnEntrar');
+  const mensagem = document.getElementById('mensagem');
+
+  // verifica se já existe senha salva
+  let senhaSalva = localStorage.getItem('senhaCache');
+  if(senhaSalva && senhasValidas.includes(senhaSalva)){
+    bloqueio.style.display = 'none'; // libera conteúdo automaticamente
+  }
+
+  function verificarSenha(){
+    const senha = senhaInput.value.trim();
+    if(senhasValidas.includes(senha)){
+      localStorage.setItem('senhaCache', senha);
+      bloqueio.style.display = 'none';
+    } else {
+      mensagem.textContent = "Senha incorreta!";
+      senhaInput.value = "";
+    }
+  }
+
+  btnEntrar.addEventListener('click', verificarSenha);
+  senhaInput.addEventListener('keydown', e => { if(e.key === 'Enter') verificarSenha(); });
+</script>
 <h1>Player</h1>
 
 <div class="buttons">
