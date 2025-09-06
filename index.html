@@ -48,6 +48,11 @@
       color: #121212;
       box-shadow: 0 0 20px #00e5ff, 0 0 40px #00b0ff;
     }
+    .ativo {
+      background: #00e5ff !important;
+      color: #121212 !important;
+      box-shadow: 0 0 20px #00e5ff, 0 0 40px #00b0ff !important;
+    }
     #musicList {
       margin-top: 20px;
       display: flex;
@@ -120,63 +125,7 @@
   </style>
 </head>
 <body>
-<div id="bloqueio" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#111;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;">
-  <h2>Digite a senha para acessar o site</h2>
-  <input type="password" id="senhaInput" style="padding:10px;font-size:16px;" placeholder="Senha">
-  <button id="btnEntrar" style="padding:10px 20px;margin-top:10px;font-size:16px;">Entrar</button>
-<a href="https://wa.me/558486222876?text=Olá,%20quero%20falar%20com%20vocês!" 
-   target="_blank" 
-   style="display: inline-block; margin-top: 10px; padding: 5px 15px; background-color: #25D366; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">
-  📱 Fale conosco
-</a>
-  <p id="mensagem" style="color:red;margin-top:10px;"></p>
-</div>
 
-<script>
-  const senhasValidas = ["A002500", "A002501", "A0Q02502", "A002D503", "A0E02504",
-"AB002505", "A0T02506", "A0J02507", "A00T2508", "A0G02509",
-"A0R02510", "A0H02511", "A0A02512", "A0K02513", "A0L02514",
-"A0F02515", "A0M02516", "A0Z02517", "A002518", "A0R02519",
-"A0E02520", "A0W02521", "A0T02522", "A0V02523", "A0K02524",
-"A0Y02525", "A0R02526", "A0Y02527", "A0U02528", "A0I02529",
-"A0P02530", "A0A02531", "A0S02532", "A0D02533", "A0F02534",
-"A0G02535", "A0H02536", "A0J02537", "A0K02538", "A00L2539",
-"A0Z02540", "A0X02541", "A0C02542", "A0V02543", "A0B02544",
-"A0N02545", "A0M02546", "A0N02547", "A0B02548", "A0V02549",
-"A0C02550", "A0X02551", "A0Z02552", "A0A02553", "A0S02554",
-"A0D02555", "A0F02556", "A0G02557", "A0H02558", "A0J02559",
-"A0K02560", "A0L02561", "A0Q02562", "A0W02563", "A0E02564",
-"A0R02565", "A0T02566", "A0Y02567", "A0U02568", "A0I02569",
-"A0O02570", "A0P02571", "A0A02572", "A0S02573", "A0D02574",
-"A0F02575", "A0G02576", "A0H02577", "A0J02578", "A0K02579",
-"A0L02580", "A002581", "A002582", "A002583", "A002584",
-"A0Z02585", "A0X02586", "A0C02587", "A0V02588", "A0B02589",
-"A0B02590", "A0N02591", "A0M02592", "A0Q02593", "A0W02594", "A0E02595"]; // coloque suas senhas aqui
-  const bloqueio = document.getElementById('bloqueio');
-  const senhaInput = document.getElementById('senhaInput');
-  const btnEntrar = document.getElementById('btnEntrar');
-  const mensagem = document.getElementById('mensagem');
-
-  // verifica se já existe senha salva
-  let senhaSalva = localStorage.getItem('senhaCache');
-  if(senhaSalva && senhasValidas.includes(senhaSalva)){
-    bloqueio.style.display = 'none'; // libera conteúdo automaticamente
-  }
-
-  function verificarSenha(){
-    const senha = senhaInput.value.trim();
-    if(senhasValidas.includes(senha)){
-      localStorage.setItem('senhaCache', senha);
-      bloqueio.style.display = 'none';
-    } else {
-      mensagem.textContent = "Senha incorreta!";
-      senhaInput.value = "";
-    }
-  }
-
-  btnEntrar.addEventListener('click', verificarSenha);
-  senhaInput.addEventListener('keydown', e => { if(e.key === 'Enter') verificarSenha(); });
-</script>
 <h1>Player</h1>
 
 <div class="buttons">
@@ -202,9 +151,9 @@
 
 <div id="avancado" style="display:none;">
   <div class="buttons">
-    <button onclick="marcarInicioLoop()">▶️ Marcar Início do Loop</button>
-    <button onclick="marcarFimLoop()">⏹️ Marcar Fim do Loop</button>
-    <button onclick="desativarTrechoLoop()">⛔ Desativar Loop</button>
+    <button id="btnInicioLoop" onclick="marcarInicioLoop()">▶️ Marcar Início do Loop</button>
+    <button id="btnFimLoop" onclick="marcarFimLoop()">⏹️ Marcar Fim do Loop</button>
+    <button id="btnDesativarLoop" onclick="desativarTrechoLoop()">⛔ Desativar Loop</button>
     <button id="btnLoopGeral" onclick="toggleLoopGeral()">🔁 Repetir Lista: OFF</button>
     <button id="btnLoopMusica" onclick="toggleLoopMusica()">🔂 Repetir Música: OFF</button>
     <button onclick="alternarVelocidade()">⏩ Velocidade: 1x</button>
@@ -328,20 +277,33 @@ function marcarInicioLoop() {
   loopInicio = audioPlayer.currentTime;
   if (loopFim > 0 && loopFim <= loopInicio) loopFim = 0;
   loopAtivo = loopFim > loopInicio;
-  alert(`▶️ Início marcado em ${loopInicio.toFixed(2)}s`);
+
+  document.getElementById('btnInicioLoop').classList.add('ativo');
+  document.getElementById('btnFimLoop').classList.remove('ativo');
+  document.getElementById('btnDesativarLoop').classList.remove('ativo');
 }
 function marcarFimLoop() {
-  if (loopInicio === 0) return alert("⚠️ Marque o início primeiro.");
+  if (loopInicio === 0) return;
   loopFim = audioPlayer.currentTime;
-  if (loopFim <= loopInicio) return alert("⚠️ Fim deve ser maior que início.");
+  if (loopFim <= loopInicio) return;
   loopAtivo = true;
-  alert(`⏹️ Fim marcado em ${loopFim.toFixed(2)}s`);
+
+  document.getElementById('btnInicioLoop').classList.add('ativo');
+  document.getElementById('btnFimLoop').classList.add('ativo');
+  document.getElementById('btnDesativarLoop').classList.remove('ativo');
 }
 function desativarTrechoLoop() {
   loopAtivo = false;
   loopInicio = 0;
   loopFim = 0;
-  alert("⛔ Loop de trecho desativado.");
+
+  document.getElementById('btnInicioLoop').classList.remove('ativo');
+  document.getElementById('btnFimLoop').classList.remove('ativo');
+  document.getElementById('btnDesativarLoop').classList.add('ativo');
+
+  setTimeout(() => {
+    document.getElementById('btnDesativarLoop').classList.remove('ativo');
+  }, 1000);
 }
 audioPlayer.ontimeupdate = () => {
   if (loopAtivo && audioPlayer.currentTime >= loopFim && loopFim > loopInicio) {
