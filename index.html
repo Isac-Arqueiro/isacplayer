@@ -139,7 +139,16 @@
 
 <script>
   const senhasValidas = 
-["A0E02504"
+["A002500","A002501","A0Q02502","A002D503","A0E02504","AB002505","A0T02506","A0J02507","A00T2508","A0G02509",
+"A0R02510","A0H02511","A0A02512","A0K02513","A0L02514","A0F02515","A0M02516","A0Z02517","A002518","A0R02519",
+"A0E02520","A0W02521","A0T02522","A0V02523","A0K02524","A0Y02525","A0R02526","A0Y02527","A0U02528","A0I02529",
+"A0P02530","A0A02531","A0S02532","A0D02533","A0F02534","A0G02535","A0H02536","A0J02537","A0K02538","A00L2539",
+"A0Z02540","A0X02541","A0C02542","A0V02543","A0B02544","A0N02545","A0M02546","A0N02547","A0B02548","A0V02549",
+"A0C02550","A0X02551","A0Z02552","A0A02553","A0S02554","A0D02555","A0F02556","A0G02557","A0H02558","A0J02559",
+"A0K02560","A0L02561","A0Q02562","A0W02563","A0E02564","A0R02565","A0T02566","A0Y02567","A0U02568","A0I02569",
+"A0O02570","A0P02571","A0A02572","A0S02573","A0D02574","A0F02575","A0G02576","A0H02577","A0J02578","A0K02579",
+"A0L02580","A002581","A002582","A002583","A002584","A0Z02585","A0X02586","A0C02587","A0V02588","A0B02589",
+"A0B02590","A0N02591","A0M02592","A0Q02593","A0W02594","A0E02595"
 ];
  // coloque suas senhas aqui
   const bloqueio = document.getElementById('bloqueio');
@@ -472,5 +481,35 @@ document.getElementById('btnMenosBPM').onclick = () => {
       .catch(err => console.error('Erro ao registrar SW', err));
   }
 </script>
+<button id="btnInstall" style="display:none;">📲 Instalar App</button>
+
+<script>
+let deferredPrompt;
+const btnInstall = document.getElementById("btnInstall");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  btnInstall.style.display = "block";
+});
+
+btnInstall.addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log("Resultado da instalação:", outcome);
+    deferredPrompt = null;
+    btnInstall.style.display = "none";
+  }
+});
+
+// Registrar Service Worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("SW registrado"))
+    .catch(err => console.error("Erro SW:", err));
+}
+</script>
+
 </body>
 </html>
