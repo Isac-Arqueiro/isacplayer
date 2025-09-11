@@ -1,5 +1,5 @@
 {
-  "name": "Meu Site App",
+  "name": "Player de Música",
   "short_name": "SiteApp",
   "start_url": "./index.html",
   "display": "standalone",
