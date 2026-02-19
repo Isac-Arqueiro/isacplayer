@@ -1,513 +1,483 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="https://i.imgur.com/fVyAd9E.jpeg">
-<link rel="apple-touch-icon" href="https://i.imgur.com/fVyAd9E.jpeg">
-<meta name="theme-color" content="#1e90ff">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Player</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
-      color: #eee;
-      padding: 20px;
-      max-width: 700px;
-      margin: auto;
-      text-shadow: 0 0 10px #00e5ff;
-    }
-    h1 {
-      text-align: center;
-      color: #00e5ff;
-      margin-bottom: 30px;
-      font-size: 2.5em;
-      text-shadow: 0 0 15px #00e5ff, 0 0 30px #00b0ff;
-    }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 12px 25px;
-      background: linear-gradient(145deg, #0a0a0a, #1e1e1e);
-      border: 1px solid #00e5ff;
-      border-radius: 12px;
-      color: #00e5ff;
-      font-size: 17px;
-      cursor: pointer;
-      transition: 0.3s ease;
-      box-shadow: 0 0 15px rgba(0,229,255,0.3);
-    }
-    button:hover {
-      background: #00e5ff;
-      color: #121212;
-      box-shadow: 0 0 20px #00e5ff, 0 0 40px #00b0ff;
-    }
-    .ativo {
-      background: #00e5ff !important;
-      color: #121212 !important;
-      box-shadow: 0 0 20px #00e5ff, 0 0 40px #00b0ff !important;
-    }
-    #musicList {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .music-item {
-      cursor: pointer;
-      padding: 12px 20px;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid #00e5ff;
-      border-radius: 12px;
-      transition: 0.3s ease;
-    }
-    .music-item:hover {
-      background: #00e5ff;
-      color: #121212;
-      box-shadow: 0 0 15px #00e5ff;
-    }
-    .music-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    .music-author {
-      font-size: 14px;
-      font-style: italic;
-      color: #aaa;
-    }
-    audio {
-      width: 100%;
-      height: 60px;
-      margin-top: 25px;
-      border-radius: 8px;
-      background: #000;
-      border: 1px solid #00e5ff;
-      box-shadow: 0 0 15px rgba(0,229,255,0.3);
-    }
-    .controls {
-      margin-top: 15px;
-      text-align: center;
-      color: #ccc;
-    }
-    .controls select, .controls input[type="range"] {
-      margin: 0 8px;
-    }
-    .controls label {
-      margin-right: 15px;
-      user-select: none;
-    }
-    #metronomoContainer {
-      display: none;
-      justify-content: center;
-      margin-top: 15px;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    #metronomoContainer input {
-      width: 60px;
-      text-align: center;
-    }
-    h3 {
-      text-align:center; 
-      color:#00e5ff; 
-      cursor:pointer; 
-      margin-top:20px;
-      text-shadow: 0 0 12px #00e5ff;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Player Completo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  background:#121212;
+  color:#eee;
+  padding:15px;
+  max-width:700px;
+  margin:auto;
+}
+
+h1{text-align:center;color:#00b0ff}
+
+.buttons{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+button{
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:#000;
+  color:#fff;
+}
+
+button:hover{background:#00b0ff}
+
+#musicList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height:350px;
+  overflow-y:auto;
+}
+
+.music-item{
+  background:#222;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.music-item:hover{background:#1db954;color:#111}
+
+.music-title{font-weight:bold}
+.music-author{font-size:13px;color:#aaa}
+
+audio{width:100%;margin-top:15px}
+
+.controls{text-align:center;margin-top:10px}
+
+#metronomoContainer{
+  display:none;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+}
+
+#metronomoContainer input{width:60px}
+
+#playerView,#transposeView{display:none}
+</style>
 </head>
 <body>
-<div id="bloqueio" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#111;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;">
-  <h2>Digite a senha para acessar o site</h2>
-  <input type="password" id="senhaInput" style="padding:10px;font-size:16px;" placeholder="Senha">
-  <button id="btnEntrar" style="padding:10px 20px;margin-top:10px;font-size:16px;">Entrar</button>
-<a href="https://wa.me/558486222876?text=Olá,%20quero%20falar%20com%20vocês!" 
-   target="_blank" 
-   style="display: inline-block; margin-top: 10px; padding: 5px 15px; background-color: #25D366; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">
-  📱 Fale conosco
-</a>
-  <p id="mensagem" style="color:red;margin-top:10px;"></p>
+
+<div class="buttons">
+  <button onclick="mostrarPlayer()">🎵 Player</button>
+  <button onclick="mostrarTranspose()">🎧 Transpose</button>
 </div>
 
-<script>
-  const senhasValidas = 
-["A002500","A002501","A0Q02502","A002D503","A0E02504","AB002505","A0T02506","A0J02507","A00T2508","A0G02509",
-"A0R02510","A0H02511","A0A02512","A0K02513","A0L02514","A0F02515","A0M02516","A0Z02517","A002518","A0R02519",
-"A0E02520","A0W02521","A0T02522","A0V02523","A0K02524","A0Y02525","A0R02526","A0Y02527","A0U02528","A0I02529",
-"A0P02530","A0A02531","A0S02532","A0D02533","A0F02534","A0G02535","A0H02536","A0J02537","A0K02538","A00L2539",
-"A0Z02540","A0X02541","A0C02542","A0V02543","A0B02544","A0N02545","A0M02546","A0N02547","A0B02548","A0V02549",
-"A0C02550","A0X02551","A0Z02552","A0A02553","A0S02554","A0D02555","A0F02556","A0G02557","A0H02558","A0J02559",
-"A0K02560","A0L02561","A0Q02562","A0W02563","A0E02564","A0R02565","A0T02566","A0Y02567","A0U02568","A0I02569",
-"A0O02570","A0P02571","A0A02572","A0S02573","A0D02574","A0F02575","A0G02576","A0H02577","A0J02578","A0K02579",
-"A0L02580","A002581","A002582","A002583","A002584","A0Z02585","A0X02586","A0C02587","A0V02588","A0B02589",
-"A0B02590","A0N02591","A0M02592","A0Q02593","A0W02594","A0E02595"
-];
- // coloque suas senhas aqui
-  const bloqueio = document.getElementById('bloqueio');
-  const senhaInput = document.getElementById('senhaInput');
-  const btnEntrar = document.getElementById('btnEntrar');
-  const mensagem = document.getElementById('mensagem');
+<!-- ================= PLAYER ================= -->
 
-  // verifica se já existe senha salva
-  let senhaSalva = localStorage.getItem('senhaCache');
-  if(senhaSalva && senhasValidas.includes(senhaSalva)){
-    bloqueio.style.display = 'none'; // libera conteúdo automaticamente
-  }
-
-  function verificarSenha(){
-    const senha = senhaInput.value.trim();
-    if(senhasValidas.includes(senha)){
-      localStorage.setItem('senhaCache', senha);
-      bloqueio.style.display = 'none';
-    } else {
-      mensagem.textContent = "Senha incorreta!";
-      senhaInput.value = "";
-    }
-  }
-
-  btnEntrar.addEventListener('click', verificarSenha);
-  senhaInput.addEventListener('keydown', e => { if(e.key === 'Enter') verificarSenha(); });
-</script>
+<div id="playerView">
 
 <h1>Player</h1>
 
 <div class="buttons">
-  <button onclick="document.getElementById('fileInput').click()">📁 Carregar Arquivo Local</button>
+  <button onclick="fileInput.click()">📁 Carregar músicas</button>
 </div>
 
-<input type="file" id="fileInput" accept="audio/*" style="display:none" multiple onchange="carregarArquivos(event)" />
+<input type="file" id="fileInput" accept="audio/*" multiple hidden>
 
 <div id="musicList"></div>
 
 <audio id="audioPlayer" controls></audio>
 
-<!-- Controles do Metrônomo -->
 <div id="metronomoContainer">
   <button id="btnMenosBPM">−</button>
-  <button id="btnMetronomo">🎵 Metrônomo: OFF</button>
+  <button id="btnMetronomo">🎵 Metrônomo OFF</button>
   <button id="btnMaisBPM">+</button>
-  <input type="number" id="inputBPM" min="40" max="200" value="60" title="BPM (40 a 200)">
+  <input type="number" id="inputBPM" value="60" min="40" max="200">
 </div>
 
-<hr>
-<h3 onclick="alternarAvancado()">🎛️ Metrônomo Loop e Equalizar</h3>
+<h3 style="text-align:center;cursor:pointer;color:#1db954" onclick="alternarAvancado()">🎛️ Avançado</h3>
 
-<div id="avancado" style="display:none;">
-  <div class="buttons">
-    <button id="btnInicioLoop" onclick="marcarInicioLoop()">▶️ Marcar Início do Loop</button>
-    <button id="btnFimLoop" onclick="marcarFimLoop()">⏹️ Marcar Fim do Loop</button>
-    <button id="btnDesativarLoop" onclick="desativarTrechoLoop()">⛔ Desativar Loop</button>
-    <button id="btnLoopGeral" onclick="toggleLoopGeral()">🔁 Repetir Lista: OFF</button>
-    <button id="btnLoopMusica" onclick="toggleLoopMusica()">🔂 Repetir Música: OFF</button>
-    <button onclick="alternarVelocidade()">⏩ Velocidade: 1x</button>
-  </div>
+<div id="avancado" class="buttons" style="display:none">
+  <button onclick="marcarInicioLoop()">▶ Início</button>
+  <button onclick="marcarFimLoop()">⏹ Fim</button>
+  <button onclick="desativarTrechoLoop()">⛔ Loop trecho</button>
+  <button id="btnLoopGeral" onclick="toggleLoopGeral()">🔁 Lista OFF</button>
+  <button id="btnLoopMusica" onclick="toggleLoopMusica()">🔂 Música OFF</button>
+  <button id="btnVel" onclick="alternarVelocidade()">⏩ 1x</button>
 </div>
 
-<div class="controls" id="equalizador" style="display:none;">
-  <label>Grave:
-    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(0, this.value)">
-  </label>
-  <label>Médio:
-    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(1, this.value)">
-  </label>
-  <label>Agudo:
-    <input type="range" min="-30" max="30" value="0" oninput="ajustarEqualizador(2, this.value)">
-  </label>
+<div id="equalizador" class="controls" style="display:none">
+  Grave <input type="range" min="-30" max="30" value="0" oninput="ajustarEQ(0,this.value)">
+  Médio <input type="range" min="-30" max="30" value="0" oninput="ajustarEQ(1,this.value)">
+  Agudo <input type="range" min="-30" max="30" value="0" oninput="ajustarEQ(2,this.value)">
+</div>
+
+</div>
+
+<!-- ================= TRANSPOSE ================= -->
+
+<div id="transposeView">
+
+<h1>Transpose Player</h1>
+
+<label>
+Selecionar música:
+<input type="file" id="fileInputT" accept="audio/*">
+</label>
+
+<audio id="originalAudio" controls></audio>
+<audio id="transposedAudio" controls style="display:none"></audio>
+
+<div class="buttons">
+  <button onclick="tomDown()">− Tom</button>
+  <button onclick="tomUp()">+ Tom</button>
+  <button onclick="processarTranspose()">▶ Processar</button>
+</div>
+
+<div id="labelTom">Tom atual: 0</div>
+
+<div class="buttons">
+  <button onclick="velDown()">− Vel</button>
+  <button onclick="velUp()">+ Vel</button>
+</div>
+
+<div id="labelVel">Velocidade: 1.00x</div>
+
+<div class="buttons">
+  <button onclick="loopIniT()">🎯 Início</button>
+  <button onclick="loopFimT()">🔁 Fim</button>
+  <button onclick="resetLoopT()">⛔ Reset</button>
+</div>
+
+<div id="downloadSection" style="display:none" class="buttons">
+  <button onclick="baixarT()">⬇ Baixar</button>
+  <button onclick="compartilharT()">📤 Compartilhar</button>
+</div>
+
 </div>
 
 <script>
-const musicas = [];
-const musicListDiv = document.getElementById('musicList');
-const audioPlayer = document.getElementById('audioPlayer');
-const btnLoopGeral = document.getElementById('btnLoopGeral');
-const btnLoopMusica = document.getElementById('btnLoopMusica');
-let repetirLista = false;
-let repetirMusica = false;
+/* ---------------- Navegação ---------------- */
 
-function montarLista() {
-  musicListDiv.innerHTML = '';
-  musicas.forEach((musica, i) => {
-    let autor = '', titulo = musica.nome;
-    if (musica.nome.includes(' - ')) {
-      [autor, titulo] = musica.nome.split(' - ').map(s => s.trim());
-      titulo = titulo.replace(/\.[^/.]+$/, "");
-    } else {
-      titulo = musica.nome.replace(/\.[^/.]+$/, "");
+function mostrarPlayer(){
+  playerView.style.display="block";
+  transposeView.style.display="none";
+}
+
+function mostrarTranspose(){
+  playerView.style.display="none";
+  transposeView.style.display="block";
+}
+
+mostrarPlayer();
+
+/* ===================== PLAYER ===================== */
+
+const fileInput=document.getElementById("fileInput");
+const musicList=document.getElementById("musicList");
+const audioPlayer=document.getElementById("audioPlayer");
+
+let musicas=[];
+let musicaAtual=0;
+let repetirLista=false;
+let repetirMusica=false;
+
+fileInput.onchange=e=>{
+  for(const f of e.target.files){
+    musicas.push({nome:f.name,url:URL.createObjectURL(f)});
+  }
+  montarLista();
+  if(musicas.length) tocar(0);
+};
+
+function montarLista(){
+  musicList.innerHTML="";
+  musicas.forEach((m,i)=>{
+    let autor="",titulo=m.nome;
+    if(titulo.includes(" - ")){
+      [autor,titulo]=titulo.split(" - ");
     }
-
-    const div = document.createElement('div');
-    div.className = 'music-item';
-    div.innerHTML = `<div class="music-title">${titulo}</div><div class="music-author">${autor}</div>`;
-    div.onclick = () => tocarMusica(i);
-    musicListDiv.appendChild(div);
+    titulo=titulo.replace(/\.[^/.]+$/,"");
+    const d=document.createElement("div");
+    d.className="music-item";
+    d.innerHTML=`<div class="music-title">${titulo}</div>
+                 <div class="music-author">${autor}</div>`;
+    d.onclick=()=>tocar(i);
+    musicList.appendChild(d);
   });
 }
 
-function carregarArquivos(event) {
-  const files = event.target.files;
-  for (let file of files) {
-    const url = URL.createObjectURL(file);
-    musicas.push({ nome: file.name, arquivo: url });
-  }
-  montarLista();
-  if (musicas.length > 0) tocarMusica(0);
-}
-
-let musicaAtual = 0;
-
-function tocarMusica(index) {
-  musicaAtual = index;
-  audioPlayer.src = musicas[index].arquivo;
+function tocar(i){
+  musicaAtual=i;
+  audioPlayer.src=musicas[i].url;
+  audioPlayer.loop=repetirMusica;
   audioPlayer.play();
-  audioPlayer.loop = repetirMusica;
-  loopAtivo = false;
-  loopInicio = 0;
-  loopFim = 0;
+  loopAtivo=false;
+  loopInicio=0;
+  loopFim=0;
 }
 
-audioPlayer.addEventListener('ended', () => {
-  if (repetirMusica) return;
-  if (repetirLista) {
-    musicaAtual = (musicaAtual + 1) % musicas.length;
-    tocarMusica(musicaAtual);
-  } else if (musicaAtual + 1 < musicas.length) {
+audioPlayer.onended=()=>{
+  if(repetirMusica)return;
+  if(repetirLista){
+    musicaAtual=(musicaAtual+1)%musicas.length;
+    tocar(musicaAtual);
+  }else if(musicaAtual+1<musicas.length){
     musicaAtual++;
-    tocarMusica(musicaAtual);
-  }
-});
-
-function toggleLoopGeral() {
-  repetirLista = !repetirLista;
-  btnLoopGeral.innerText = repetirLista ? "🔁 Repetir Lista: ON" : "🔁 Repetir Lista: OFF";
-}
-
-function toggleLoopMusica() {
-  repetirMusica = !repetirMusica;
-  audioPlayer.loop = repetirMusica;
-  btnLoopMusica.innerText = repetirMusica ? "🔂 Repetir Música: ON" : "🔂 Repetir Música: OFF";
-}
-
-// Equalizador
-let audioCtx, sourceNode, gainNode, filters = [];
-function initAudioContext() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    sourceNode = audioCtx.createMediaElementSource(audioPlayer);
-    gainNode = audioCtx.createGain();
-    const freqs = [60, 1000, 5000];
-    filters = freqs.map(f => {
-      let filter = audioCtx.createBiquadFilter();
-      filter.type = "peaking";
-      filter.frequency.value = f;
-      filter.Q.value = 1;
-      filter.gain.value = 0;
-      return filter;
-    });
-    sourceNode.connect(filters[0]);
-    filters.reduce((a, b) => (a.connect(b), b));
-    filters[filters.length - 1].connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-  }
-}
-function ajustarEqualizador(index, valor) {
-  initAudioContext();
-  filters[index].gain.value = parseFloat(valor);
-}
-
-// Loop de trecho
-let loopInicio = 0, loopFim = 0, loopAtivo = false;
-function marcarInicioLoop() {
-  loopInicio = audioPlayer.currentTime;
-  if (loopFim > 0 && loopFim <= loopInicio) loopFim = 0;
-  loopAtivo = loopFim > loopInicio;
-
-  document.getElementById('btnInicioLoop').classList.add('ativo');
-  document.getElementById('btnFimLoop').classList.remove('ativo');
-  document.getElementById('btnDesativarLoop').classList.remove('ativo');
-}
-function marcarFimLoop() {
-  if (loopInicio === 0) return;
-  loopFim = audioPlayer.currentTime;
-  if (loopFim <= loopInicio) return;
-  loopAtivo = true;
-
-  document.getElementById('btnInicioLoop').classList.add('ativo');
-  document.getElementById('btnFimLoop').classList.add('ativo');
-  document.getElementById('btnDesativarLoop').classList.remove('ativo');
-}
-function desativarTrechoLoop() {
-  loopAtivo = false;
-  loopInicio = 0;
-  loopFim = 0;
-
-  document.getElementById('btnInicioLoop').classList.remove('ativo');
-  document.getElementById('btnFimLoop').classList.remove('ativo');
-  document.getElementById('btnDesativarLoop').classList.add('ativo');
-
-  setTimeout(() => {
-    document.getElementById('btnDesativarLoop').classList.remove('ativo');
-  }, 1000);
-}
-audioPlayer.ontimeupdate = () => {
-  if (loopAtivo && audioPlayer.currentTime >= loopFim && loopFim > loopInicio) {
-    audioPlayer.currentTime = loopInicio;
-    audioPlayer.play();
+    tocar(musicaAtual);
   }
 };
 
-// Velocidade
-let velocidades = [0.5, 0.75, 1, 1.25, 1.5, 2];
-let indiceVelocidade = 2;
-function alternarVelocidade() {
-  indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
-  const novaVelocidade = velocidades[indiceVelocidade];
-  audioPlayer.playbackRate = novaVelocidade;
-  event.target.innerText = `⏩ Velocidade: ${novaVelocidade}x`;
+function toggleLoopGeral(){
+  repetirLista=!repetirLista;
+  btnLoopGeral.textContent=repetirLista?"🔁 Lista ON":"🔁 Lista OFF";
 }
 
-// Mostrar/Ocultar avançado com 3 estados
-let modoAvancado = 0;
-function alternarAvancado() {
-  const divAvancado = document.getElementById('avancado');
-  const eq = document.getElementById('equalizador');
-  const met = document.getElementById('metronomoContainer');
-
-  modoAvancado = (modoAvancado + 1) % 3;
-
-  if (modoAvancado === 0) {
-    divAvancado.style.display = 'none';
-    eq.style.display = 'none';
-    met.style.display = 'none';
-  } else if (modoAvancado === 1) {
-    divAvancado.style.display = 'block';
-    met.style.display = 'flex';
-    eq.style.display = 'none';
-  } else if (modoAvancado === 2) {
-    divAvancado.style.display = 'none';
-    met.style.display = 'none';
-    eq.style.display = 'flex';
-  }
+function toggleLoopMusica(){
+  repetirMusica=!repetirMusica;
+  audioPlayer.loop=repetirMusica;
+  btnLoopMusica.textContent=repetirMusica?"🔂 Música ON":"🔂 Música OFF";
 }
 
-window.onload = montarLista;
+/* ----- EQ ----- */
 
-// --- Metrônomo ---
-let metronomoAtivo = false;
-let bpm = 60;
-let intervalId = null;
-let audioCtxGlobal = null;
-function tocarClique() {
-  if (!audioCtxGlobal) return;
-  const osc = audioCtxGlobal.createOscillator();
-  const gainNode = audioCtxGlobal.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(1000, audioCtxGlobal.currentTime);
-  gainNode.gain.setValueAtTime(1, audioCtxGlobal.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtxGlobal.currentTime + 0.05);
-  osc.connect(gainNode);
-  gainNode.connect(audioCtxGlobal.destination);
-  osc.start(audioCtxGlobal.currentTime);
-  osc.stop(audioCtxGlobal.currentTime + 0.05);
+let ctxEQ,srcEQ,filtersEQ=[],gainEQ;
+
+function initEQ(){
+  if(ctxEQ)return;
+  ctxEQ=new AudioContext();
+  srcEQ=ctxEQ.createMediaElementSource(audioPlayer);
+  gainEQ=ctxEQ.createGain();
+  const f=[60,1000,5000];
+  filtersEQ=f.map(fr=>{
+    const fl=ctxEQ.createBiquadFilter();
+    fl.type="peaking";
+    fl.frequency.value=fr;
+    fl.Q.value=1;
+    fl.gain.value=0;
+    return fl;
+  });
+  srcEQ.connect(filtersEQ[0]);
+  filtersEQ.reduce((a,b)=>(a.connect(b),b));
+  filtersEQ.at(-1).connect(gainEQ);
+  gainEQ.connect(ctxEQ.destination);
 }
-function iniciarMetronomo() {
-  if (!audioCtxGlobal) {
-    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (intervalId) clearInterval(intervalId);
-  const intervalo = 60000 / bpm;
-  tocarClique();
-  intervalId = setInterval(tocarClique, intervalo);
+
+function ajustarEQ(i,v){
+  initEQ();
+  filtersEQ[i].gain.value=parseFloat(v);
 }
-function pararMetronomo() {
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
+
+/* ----- Loop trecho ----- */
+
+let loopInicio=0,loopFim=0,loopAtivo=false;
+
+function marcarInicioLoop(){
+  loopInicio=audioPlayer.currentTime;
 }
-document.getElementById('btnMetronomo').onclick = () => {
-  if (!audioCtxGlobal) {
-    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  metronomoAtivo = !metronomoAtivo;
-  const btn = document.getElementById('btnMetronomo');
-  if (metronomoAtivo) {
-    btn.textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
-    iniciarMetronomo();
-  } else {
-    btn.textContent = '🎵 Metrônomo: OFF';
-    pararMetronomo();
+
+function marcarFimLoop(){
+  if(!loopInicio)return;
+  loopFim=audioPlayer.currentTime;
+  if(loopFim>loopInicio)loopAtivo=true;
+}
+
+function desativarTrechoLoop(){
+  loopAtivo=false;loopInicio=0;loopFim=0;
+}
+
+audioPlayer.ontimeupdate=()=>{
+  if(loopAtivo && audioPlayer.currentTime>=loopFim){
+    audioPlayer.currentTime=loopInicio;
   }
 };
-document.getElementById('inputBPM').onchange = () => {
-  let val = parseInt(inputBPM.value);
-  if (isNaN(val) || val < 40) val = 40;
-  else if (val > 200) val = 200;
-  bpm = val;
-  inputBPM.value = bpm;
-  if (metronomoAtivo) {
-    iniciarMetronomo();
-    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+
+/* ----- Velocidade ----- */
+
+const velocidades=[0.5,0.75,1,1.25,1.5,2];
+let velIdx=2;
+
+function alternarVelocidade(){
+  velIdx=(velIdx+1)%velocidades.length;
+  const v=velocidades[velIdx];
+  audioPlayer.playbackRate=v;
+  btnVel.textContent="⏩ "+v+"x";
+}
+
+/* ----- Avançado ----- */
+
+function alternarAvancado(){
+  const a=avancado.style.display==="flex";
+  avancado.style.display=a?"none":"flex";
+  equalizador.style.display=a?"none":"block";
+  metronomoContainer.style.display=a?"none":"flex";
+}
+
+/* ----- Metrônomo ----- */
+
+let bpm=60,metAtivo=false,metInt=null,metCtx;
+
+function clique(){
+  const o=metCtx.createOscillator();
+  const g=metCtx.createGain();
+  o.frequency.value=1000;
+  g.gain.setValueAtTime(1,metCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,metCtx.currentTime+0.05);
+  o.connect(g);g.connect(metCtx.destination);
+  o.start();o.stop(metCtx.currentTime+0.05);
+}
+
+function iniciarMet(){
+  clearInterval(metInt);
+  clique();
+  metInt=setInterval(clique,60000/bpm);
+}
+
+btnMetronomo.onclick=()=>{
+  if(!metCtx)metCtx=new AudioContext();
+  metAtivo=!metAtivo;
+  if(metAtivo){
+    iniciarMet();
+    btnMetronomo.textContent="🎵 ON ("+bpm+")";
+  }else{
+    clearInterval(metInt);
+    btnMetronomo.textContent="🎵 OFF";
   }
 };
-document.getElementById('btnMaisBPM').onclick = () => {
-  if (bpm < 200) {
-    bpm++;
-    inputBPM.value = bpm;
-    if (metronomoAtivo) iniciarMetronomo();
-    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+
+inputBPM.onchange=()=>{
+  bpm=Math.min(200,Math.max(40,parseInt(inputBPM.value)||60));
+  inputBPM.value=bpm;
+  if(metAtivo)iniciarMet();
+};
+
+btnMaisBPM.onclick=()=>{if(bpm<200){bpm++;inputBPM.value=bpm;if(metAtivo)iniciarMet();}};
+btnMenosBPM.onclick=()=>{if(bpm>40){bpm--;inputBPM.value=bpm;if(metAtivo)iniciarMet();}};
+
+/* ===================== TRANSPOSE ===================== */
+
+let ctxT,bufferT=null,transpose=0,velT=1;
+let blobURL=null;
+let loopIni=null,loopFim2=null,loopAtivoT=false;
+
+fileInputT.onchange=async()=>{
+  const f=fileInputT.files[0];
+  if(!f)return;
+  ctxT=new AudioContext();
+  const ab=await f.arrayBuffer();
+  bufferT=await ctxT.decodeAudioData(ab);
+  originalAudio.src=URL.createObjectURL(f);
+  atualizarLabelsT();
+};
+
+function tomUp(){transpose++;atualizarLabelsT();}
+function tomDown(){transpose--;atualizarLabelsT();}
+
+function velUp(){velT=Math.min(4,velT+0.25);atualizarLabelsT();}
+function velDown(){velT=Math.max(0.25,velT-0.25);atualizarLabelsT();}
+
+function atualizarLabelsT(){
+  labelTom.textContent="Tom atual: "+transpose;
+  labelVel.textContent="Velocidade: "+velT.toFixed(2)+"x";
+  originalAudio.playbackRate=velT;
+  transposedAudio.playbackRate=velT;
+}
+
+async function processarTranspose(){
+  if(!bufferT)return alert("Selecione um áudio");
+
+  const off=new OfflineAudioContext(
+    bufferT.numberOfChannels,
+    bufferT.length,
+    bufferT.sampleRate
+  );
+
+  const s=off.createBufferSource();
+  s.buffer=bufferT;
+  s.playbackRate.value=Math.pow(2,transpose/12);
+  s.connect(off.destination);
+  s.start();
+
+  const r=await off.startRendering();
+  const wav=bufferToWav(r);
+  const blob=new Blob([new DataView(wav)],{type:"audio/wav"});
+  blobURL=URL.createObjectURL(blob);
+
+  transposedAudio.src=blobURL;
+  transposedAudio.style.display="block";
+  transposedAudio.playbackRate=velT;
+  transposedAudio.play();
+  downloadSection.style.display="flex";
+}
+
+function baixarT(){
+  if(!blobURL)return;
+  const a=document.createElement("a");
+  a.href=blobURL;
+  a.download="audio_transposto.wav";
+  a.click();
+}
+
+function compartilharT(){
+  if(!blobURL)return;
+  const msg=encodeURIComponent("Ouça esse áudio: "+blobURL);
+  window.open("https://wa.me/?text="+msg,"_blank");
+}
+
+function loopIniT(){loopIni=transposedAudio.currentTime;}
+function loopFimT(){
+  if(loopIni==null)return;
+  loopFim2=transposedAudio.currentTime;
+  if(loopFim2>loopIni)loopAtivoT=true;
+}
+function resetLoopT(){
+  loopIni=null;loopFim2=null;loopAtivoT=false;
+}
+
+transposedAudio.ontimeupdate=()=>{
+  if(loopAtivoT && transposedAudio.currentTime>=loopFim2){
+    transposedAudio.currentTime=loopIni;
   }
 };
-document.getElementById('btnMenosBPM').onclick = () => {
-  if (bpm > 40) {
-    bpm--;
-    inputBPM.value = bpm;
-    if (metronomoAtivo) iniciarMetronomo();
-    document.getElementById('btnMetronomo').textContent = `🎵 Metrônomo: ON (${bpm} BPM)`;
+
+/* ----- WAV ----- */
+
+function bufferToWav(buffer){
+  let num=buffer.numberOfChannels,
+  len=buffer.length*num*2+44,
+  ab=new ArrayBuffer(len),
+  view=new DataView(ab),
+  ch=[],pos=0,off=0;
+
+  function u16(d){view.setUint16(pos,d,true);pos+=2;}
+  function u32(d){view.setUint32(pos,d,true);pos+=4;}
+
+  u32(0x46464952);u32(len-8);u32(0x45564157);
+  u32(0x20746d66);u32(16);u16(1);u16(num);
+  u32(buffer.sampleRate);
+  u32(buffer.sampleRate*2*num);
+  u16(num*2);u16(16);
+  u32(0x61746164);u32(len-pos-4);
+
+  for(let i=0;i<num;i++)ch.push(buffer.getChannelData(i));
+
+  while(pos<len){
+    for(let i=0;i<num;i++){
+      let s=Math.max(-1,Math.min(1,ch[i][off]));
+      view.setInt16(pos,s<0?s*0x8000:s*0x7FFF,true);
+      pos+=2;
+    }
+    off++;
   }
-};
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('Service Worker registrado'))
-      .catch(err => console.error('Erro ao registrar SW', err));
-  }
-</script>
-<button id="btnInstall" style="display:none;">📲 Instalar App</button>
-
-<script>
-let deferredPrompt;
-const btnInstall = document.getElementById("btnInstall");
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  btnInstall.style.display = "block";
-});
-
-btnInstall.addEventListener("click", async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log("Resultado da instalação:", outcome);
-    deferredPrompt = null;
-    btnInstall.style.display = "none";
-  }
-});
-
-// Registrar Service Worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js")
-    .then(() => console.log("SW registrado"))
-    .catch(err => console.error("Erro SW:", err));
+  return ab;
 }
 </script>
 
